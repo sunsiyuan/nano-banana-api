@@ -2,7 +2,7 @@
 
 [中文](README.zh-CN.md)
 
-Use Nano Banana 2.1 and Nano Banana 2 through [HaryAI](https://haryai.com/en/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) at 50% off Google's official price. No Google Cloud account needed: one HaryAI key is enough. Both work with OpenAI's images API (`/v1/images/generations`, `/v1/images/edits`) and the OpenAI SDKs: point the base URL at `https://api.haryai.com/v1`, pass a Nano Banana model name, and nothing else in your code changes. Both also work with Gemini's own `generateContent`.
+Use Nano Banana 2.1 and Nano Banana 2 through [HaryAI](https://haryai.com/en/nano-banana-openai-api?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) at 50% off Google's official price. No Google Cloud account needed: one HaryAI key is enough. Both work with OpenAI's images API (`/v1/images/generations`, `/v1/images/edits`) and the OpenAI SDKs: point the base URL at `https://api.haryai.com/v1`, pass a Nano Banana model name, and nothing else in your code changes. Both also work with Gemini's own `generateContent`.
 
 This repo shows how to call it: curl, short Python and Node scripts, and answers to common questions. The full reference is [docs/image.md](https://haryai.com/docs/image.md).
 

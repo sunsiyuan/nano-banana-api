@@ -197,7 +197,7 @@ const en = `# Nano Banana API through HaryAI
 
 [中文](README.zh-CN.md)
 
-Use Nano Banana 2.1 and Nano Banana 2 through [HaryAI](${page("/en/nano-banana-2-1")}) at ${off}% off Google's official price. No Google Cloud account needed: one HaryAI key is enough. Both work with OpenAI's images API (\`/v1/images/generations\`, \`/v1/images/edits\`) and the OpenAI SDKs: point the base URL at \`https://api.haryai.com/v1\`, pass a Nano Banana model name, and nothing else in your code changes. Both also work with Gemini's own \`generateContent\`.
+Use Nano Banana 2.1 and Nano Banana 2 through [HaryAI](${page("/en/nano-banana-openai-api")}) at ${off}% off Google's official price. No Google Cloud account needed: one HaryAI key is enough. Both work with OpenAI's images API (\`/v1/images/generations\`, \`/v1/images/edits\`) and the OpenAI SDKs: point the base URL at \`https://api.haryai.com/v1\`, pass a Nano Banana model name, and nothing else in your code changes. Both also work with Gemini's own \`generateContent\`.
 
 This repo shows how to call it: curl, short Python and Node scripts, and answers to common questions. The full reference is [docs/image.md](${doc("/docs/image.md")}).
 
@@ -342,7 +342,7 @@ const zh = `# 通过 HaryAI 调用 Nano Banana API
 
 [English](README.md)
 
-在 [HaryAI](${page("/zh/nano-banana-2-1")}) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 ${zhZhe}。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（\`/v1/images/generations\`、\`/v1/images/edits\`）和 OpenAI 的 SDK：接口地址填 \`https://api.haryai.com/v1\`，模型名换成 Nano Banana 的名字，代码其它地方不用改。两个模型也支持 Gemini 自己的 \`generateContent\` 格式。
+在 [HaryAI](${page("/zh/nano-banana-openai-api")}) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 ${zhZhe}。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（\`/v1/images/generations\`、\`/v1/images/edits\`）和 OpenAI 的 SDK：接口地址填 \`https://api.haryai.com/v1\`，模型名换成 Nano Banana 的名字，代码其它地方不用改。两个模型也支持 Gemini 自己的 \`generateContent\` 格式。
 
 这个仓库讲怎么调用：curl 示例、Python 和 Node 的小脚本，还有常见问题的回答。完整接口文档见 [docs/image.md](${doc("/docs/image.md")})。
 
