@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-在 [HaryAI](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 5 折。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（`/v1/images/generations`、`/v1/images/edits`）和 OpenAI 的 SDK：接口地址填 `https://api.haryai.com/v1`，模型名换成 Nano Banana 的名字，代码其它地方不用改；也支持 Gemini 自己的 `generateContent`。
+在 [HaryAI](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 5 折。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（`/v1/images/generations`、`/v1/images/edits`）和 OpenAI 的 SDK：接口地址填 `https://api.haryai.com/v1`，模型名换成 Nano Banana 的名字，代码其它地方不用改。两个模型也支持 Gemini 自己的 `generateContent` 格式。
 
 这个仓库讲怎么调用：curl 示例、Python 和 Node 的小脚本，还有常见问题的回答。完整接口文档见 [docs/image.md](https://haryai.com/docs/image.md)。
 
@@ -13,11 +13,11 @@
 | Nano Banana 2.1 | `gemini-nano-banana-2.1` | `1K`, `2K`, `4K` | OpenAI Images, Gemini generateContent, OpenAI Chat Completions |
 | Nano Banana 2 | `gemini-3.1-flash-image` | `1K`, `2K`, `4K` | OpenAI Images, Gemini generateContent, OpenAI Chat Completions |
 
-返回的图片都是 `b64_json`，`n` 始终是 1（一次一张），编辑不支持蒙版，想改哪里用文字说清楚。
+返回的图片都是 `b64_json`。`n` 只能是 1，一次出一张。编辑不支持蒙版，想改哪里，在提示词里用文字说清楚。
 
 ## 每张价格
 
-单位美元，是 Google 官方价的 5 折，从 HaryAI 余额扣费。生成失败不扣费。
+单位美元，是 Google 官方价的 5 折，从 HaryAI 余额扣费。请求失败不扣费。
 
 | 模型 | 尺寸 | 官方价 | HaryAI |
 |---|---|---|---|
@@ -32,7 +32,7 @@ Nano Banana 2.1 是 Google 推出的新模型，用来取代 Nano Banana 2。在
 
 ## 快速开始
 
-1. 在 [haryai.com](https://haryai.com/zh/signup?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 注册。新账号验证邮箱后送 $0.50 余额，够用 Nano Banana 2.1 的 1K 档出 29 张图（每张 $0.0168）。
+1. 在 [haryai.com](https://haryai.com/zh/signup?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 注册。新账号验证邮箱后送 $0.50 余额，够出大约 20 张图。
 2. 在账户页复制 API key，设成环境变量：`export HARYAI_KEY=...`
 
 图片生成是同步的：一个请求直接返回图片。
@@ -48,8 +48,8 @@ curl https://api.haryai.com/v1/images/generations \
 
 返回：`{"data": [{"b64_json": "…"}]}`。图片总是 `b64_json`，不会给链接。
 
-- `size`：写成宽x高，会自动匹配最接近的画面比例和档位（`1024x1024` 是 1K 正方形，`1536x1024` 是 2K 3:2）。也可以直接传 `aspect_ratio`（`1:1`、`3:2`、`16:9`、`9:16` 等）和 `image_size`（`1K`、`2K`、`4K`）。什么都不传时：新生成的图是 1K 正方形，编辑则跟输入图片同形状。
-- `n`：始终是 1，一次一张。
+- `size`：写成宽x高，会自动匹配最接近的画面比例和档位（`1024x1024` 是 1K 正方形，`1536x1024` 是 2K 3:2）。也可以直接传 `aspect_ratio`（`1:1`、`3:2`、`16:9`、`9:16` 等）和 `image_size`（`1K`、`2K`、`4K`）。什么都不传时，出图都是 1K：新生成的是正方形，编辑的跟原图比例一样。
+- `n`：只能是 1，一次出一张。
 
 ### 编辑
 
@@ -95,7 +95,7 @@ Nano Banana 2.1 1K $0.0168，2K $0.0252，4K $0.0567（官方价 1K $0.0336，2K
 
 ### 需要开 Google Cloud 或 Gemini 账号吗？
 
-不需要。有 HaryAI 的 key 就能用，不用开 Google Cloud 项目、不用在那边开计费、也不用申请模型权限。
+不需要。有 HaryAI 的 key 就能用，费用从 HaryAI 余额里按量扣。
 
 ### 能编辑图片吗？
 
@@ -111,11 +111,11 @@ Nano Banana 2.1 1K $0.0168，2K $0.0252，4K $0.0567（官方价 1K $0.0336，2K
 
 ### 哪些工具能用？
 
-能自己填 OpenAI 接口地址、自己输入模型名的工具都能用，比如 OpenAI 的 Python 和 Node SDK，以及基于它们搭的工具。只给一份固定模型列表、没有接口地址输入框的工具用不了。
+能自己填 OpenAI 接口地址、自己输入模型名的工具都能用，比如 OpenAI 的 Python 和 Node SDK。只给一份固定模型列表、没有接口地址输入框的工具用不了。
 
 ### Nano Banana 2.1 和 2 该选哪个？
 
-Nano Banana 2.1 是 Google 更新的模型，用来取代 Nano Banana 2，在 HaryAI 上也更便宜：1K、2K 的价格是 Nano Banana 2 的一半，4K 的价格是 Nano Banana 2 的 75%。没有必须用旧模型的理由，就选 2.1。
+新项目选 Nano Banana 2.1。Google 推出它来取代 Nano Banana 2，它在设计、改图和人脸一致性上都更好，价格也更低：1K、2K 的价格是 Nano Banana 2 的一半，4K 的价格是 Nano Banana 2 的 75%。已经在用 Nano Banana 2 的，可以继续用。
 
 ### 生成失败扣钱吗？
 
@@ -134,11 +134,25 @@ POST https://api.haryai.com/v1beta/models/gemini-nano-banana-2.1:generateContent
 我想要的画面：
 ```
 
-Claude Code 照常用你自己的 Claude 订阅，只有图片从 HaryAI 余额扣费。Codex 不用先切换到 DeepSeek。详见 [Nano Banana 2.1](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)。
+详见 [Nano Banana 2.1](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)。
+
+### Gemini 自己的格式也能用吗？
+
+能，用同一个 key、同一份余额。接口地址是 `https://api.haryai.com/v1beta`，key 放在 `x-goog-api-key` 请求头里（也可以用 `Authorization: Bearer`）。
+
+```sh
+curl https://api.haryai.com/v1beta/models/gemini-nano-banana-2.1:generateContent \
+  -H "x-goog-api-key: $HARYAI_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{"role": "user", "parts": [{"text": "A cup of green tea on a wooden table by a window, morning light"}]}],
+    "generationConfig": {"responseModalities": ["IMAGE"], "imageConfig": {"aspectRatio": "16:9", "imageSize": "2K"}}
+  }'
+```
 
 ### 计费怎么算？
 
-Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的 token 数（2.1：1K 1,120、2K 1,680、4K 3,780；2：1K 1,120、2K 1,680、4K 2,520），输入的文字和图片按输入 token 计费。Nano Banana 2.1 还会先思考再出图，这部分思考 token 按文字输出计费，大约比一张 2K 图片的量多十分之一。 上游拒绝（字段有问题，或者提示词、图片被模型的内容审核挡下）会带着上游的报错信息返回，不收费。
+Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的 token 数（2.1：1K 1,120、2K 1,680、4K 3,780；2：1K 1,120、2K 1,680、4K 2,520），输入的文字和图片按输入 token 计费。Nano Banana 2.1 还会先思考再出图，这部分思考 token 按文字输出计费，按 2K 图片算，大约在图片价格上再多十分之一。上游拒绝（字段有问题，或者提示词、图片被模型的内容审核挡下）会带着上游的报错信息返回，不收费。
 
 ### 报错是什么意思？
 
@@ -167,4 +181,4 @@ MIT，见 [LICENSE](LICENSE)。
 
 价格截至 2026-11-23。
 
-<!-- 由 build.mjs 于 2026-11-23 生成，数据来自 https://haryai.com/llms.txt（价格标记之间的 Images 一节）、https://haryai.com/docs/image.md 和 https://haryai.com/zh/nano-banana-2-1 上的 agent 提示词。请改 build.mjs，不要直接改本文件。 -->
+<!-- 由 build.mjs 于 2026-11-23 生成，数据来自 https://haryai.com/llms.txt（价格标记之间的 Images 一节）、https://haryai.com/docs/image.md 和 https://haryai.com/zh/nano-banana-2-1 上的 agent 提示词与注册赠送可出图张数。请改 build.mjs，不要直接改本文件。 -->

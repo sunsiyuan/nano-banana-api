@@ -90,7 +90,9 @@ const rowOf = (id) => must(tableRows.find((r) => r.id === id), `models table row
 
 const blocks = [...md.matchAll(/```sh\n([\s\S]*?)```/g)].map((m) => m[1].trimEnd());
 if (blocks.length !== 5) throw new Error(`expected 5 sh blocks in docs/image.md, got ${blocks.length}`);
-const [, nanoGenerate, nanoEdit] = blocks;
+const [, nanoGenerate, nanoEdit, geminiGenerate] = blocks;
+if (!geminiGenerate.includes("/v1beta/models/")) throw new Error("4th sh block in docs/image.md is not the Gemini generateContent example");
+const geminiNote = flat(must(md.match(/Base URL: `https:\/\/api\.haryai\.com\/v1beta`\. The key goes in `x-goog-api-key`\s+\(or `Authorization: Bearer`\)\./), "Gemini base URL note")[0]);
 
 const nanoSection = must(
   md.match(/## Nano Banana 2\.1 and 2: OpenAI Images format\n([\s\S]*?)\n## Nano Banana 2\.1 and 2: Gemini format/),
@@ -125,6 +127,7 @@ expect(
   "size rule",
 );
 expect(nRule, "1 only.", "n rule");
+expect(geminiNote, "Base URL: `https://api.haryai.com/v1beta`. The key goes in `x-goog-api-key` (or `Authorization: Bearer`).", "Gemini base URL note");
 expect(
   editsRule,
   "`POST /v1/images/edits`, multipart with `image` (one or more files) and `prompt`, as with OpenAI. Masks are not supported; describe the change in the prompt.",
@@ -143,19 +146,26 @@ expect(
 
 const replyNoteZh = '返回：`{"data": [{"b64_json": "…"}]}`。图片总是 `b64_json`，不会给链接。';
 const sizeRuleZh =
-  "写成宽x高，会自动匹配最接近的画面比例和档位（`1024x1024` 是 1K 正方形，`1536x1024` 是 2K 3:2）。也可以直接传 `aspect_ratio`（`1:1`、`3:2`、`16:9`、`9:16` 等）和 `image_size`（`1K`、`2K`、`4K`）。什么都不传时：新生成的图是 1K 正方形，编辑则跟输入图片同形状。";
-const nRuleZh = "始终是 1，一次一张。";
+  "写成宽x高，会自动匹配最接近的画面比例和档位（`1024x1024` 是 1K 正方形，`1536x1024` 是 2K 3:2）。也可以直接传 `aspect_ratio`（`1:1`、`3:2`、`16:9`、`9:16` 等）和 `image_size`（`1K`、`2K`、`4K`）。什么都不传时，出图都是 1K：新生成的是正方形，编辑的跟原图比例一样。";
+const nRuleZh = "只能是 1，一次出一张。";
 const editsRuleZh =
   "调用 `POST /v1/images/edits`，multipart 表单，带一个或多个 `image` 文件和一个 `prompt`，跟 OpenAI 自己的编辑接口一样。不支持蒙版，想改哪里用文字说清楚。";
 const billingNoteZh =
-  "Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的 token 数（2.1：1K 1,120、2K 1,680、4K 3,780；2：1K 1,120、2K 1,680、4K 2,520），输入的文字和图片按输入 token 计费。Nano Banana 2.1 还会先思考再出图，这部分思考 token 按文字输出计费，大约比一张 2K 图片的量多十分之一。";
+  "Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的 token 数（2.1：1K 1,120、2K 1,680、4K 3,780；2：1K 1,120、2K 1,680、4K 2,520），输入的文字和图片按输入 token 计费。Nano Banana 2.1 还会先思考再出图，这部分思考 token 按文字输出计费，按 2K 图片算，大约在图片价格上再多十分之一。";
 const refusalNoteZh = "上游拒绝（字段有问题，或者提示词、图片被模型的内容审核挡下）会带着上游的报错信息返回，不收费。";
 
-// ---- the agent prompt on the Nano Banana 2.1 model page (first <pre><code>)
-const agentPrompt = async (path) =>
-  unescape(must((await get(`${SITE}${path}`)).match(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/), `prompt on ${path}`)[1]).trim();
-const promptEn = await agentPrompt("/en/nano-banana-2-1");
-const promptZh = await agentPrompt("/zh/nano-banana-2-1");
+// ---- the Nano Banana 2.1 model page: the agent prompt (first <pre><code>)
+// and how many images the signup gift buys (the site counts thinking and
+// input tokens, so this is not gift / table price)
+const pageEn = await get(`${SITE}/en/nano-banana-2-1`);
+const pageZh = await get(`${SITE}/zh/nano-banana-2-1`);
+const agentPrompt = (html, path) =>
+  unescape(must(html.match(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/), `prompt on ${path}`)[1]).trim();
+const promptEn = agentPrompt(pageEn, "/en/nano-banana-2-1");
+const promptZh = agentPrompt(pageZh, "/zh/nano-banana-2-1");
+const giftImages = must(pageEn.match(/Enough for about (\d+) images/), "gift image count on /en/nano-banana-2-1")[1];
+const giftImagesZh = must(pageZh.match(/够出大约 ?(\d+) ?张图/), "gift image count on /zh/nano-banana-2-1")[1];
+if (giftImages !== giftImagesZh) throw new Error(`gift image count differs: en ${giftImages}, zh ${giftImagesZh}`);
 
 // ---- guard: the example scripts' default model must still exist
 for (const file of ["examples/nano_banana.py", "examples/nano-banana.mjs"]) {
@@ -181,8 +191,6 @@ const priceTable = (h) =>
   ].join("\n");
 const sh = (s) => "```sh\n" + s + "\n```";
 
-const leadTier = Object.keys(banana21.tiers)[0]; // "1K": the first tier in site order
-const giftImages = Math.floor(gift / banana21.tiers[leadTier].ours);
 
 // ================================================================ English
 const en = `# Nano Banana API through HaryAI
@@ -209,7 +217,7 @@ Nano Banana 2.1 is Google's replacement for Nano Banana 2. On HaryAI, ${ratioSen
 
 ## Quick start
 
-1. Sign up at [haryai.com](${page("/en/signup")}). A verified new account gets $${gift.toFixed(2)} of balance, enough for ${giftImages} images with Nano Banana 2.1 at ${leadTier} (${usd(banana21.tiers[leadTier].oursStr)} each).
+1. Sign up at [haryai.com](${page("/en/signup")}). A verified new account gets $${gift.toFixed(2)} of balance, enough for about ${giftImages} images.
 2. Copy your API key from the account page and set it: \`export HARYAI_KEY=...\`
 
 Image generation is synchronous: one request returns the image.
@@ -257,7 +265,7 @@ ${models.map((m) => `${m.name}: ${Object.entries(m.tiers).map(([size, p]) => `${
 
 ### Do I need a Google Cloud or Gemini account?
 
-No. Your HaryAI key is enough. You don't open a Google Cloud project, enable billing there or request access to the model.
+No. Your HaryAI key is enough, and you pay as you go from your HaryAI balance.
 
 ### Can I edit images?
 
@@ -273,11 +281,11 @@ One. \`n\` is always 1. For more, send several requests at once.
 
 ### Which tools work with this?
 
-Any tool that lets you set an OpenAI base URL and type a model name yourself can use it: the OpenAI Python and Node SDKs, and anything built on them. A tool that only offers its own fixed list of OpenAI models, with no base URL field, can't reach Nano Banana.
+Any tool that lets you set an OpenAI base URL and type a model name yourself can use it: for example the OpenAI Python and Node SDKs. A tool that only offers its own fixed list of OpenAI models, with no base URL field, can't reach Nano Banana.
 
 ### Nano Banana 2.1 vs Nano Banana 2: which should I use?
 
-Nano Banana 2.1 is Google's newer model, replacing Nano Banana 2, and on HaryAI it is cheaper: ${ratioSentenceEn}. Use 2.1 unless you have a reason to pin the older model.
+Nano Banana 2.1 for new work. Google made it the replacement for Nano Banana 2, and it is better at design, editing and keeping faces consistent. It is also cheaper: ${ratioSentenceEn}. Nano Banana 2 stays for anyone already using it.
 
 ### Is a failed request charged?
 
@@ -291,7 +299,13 @@ Put your key in \`HARYAI_KEY\`, then paste this to the agent with what you want 
 ${promptEn}
 \`\`\`
 
-Claude Code runs on your own Claude plan as usual; only the image is paid from your HaryAI balance. Codex doesn't need to switch to DeepSeek first. Guide: [Nano Banana 2.1](${page("/en/nano-banana-2-1")}).
+Guide: [Nano Banana 2.1](${page("/en/nano-banana-2-1")}).
+
+### Does Gemini's own format work too?
+
+Yes, on the same key and the same balance. ${geminiNote}
+
+${sh(geminiGenerate)}
 
 ### How is billing calculated?
 
@@ -320,7 +334,7 @@ MIT. See [LICENSE](LICENSE).
 
 Prices as of ${today}.
 
-<!-- Generated by build.mjs on ${today} from ${LLMS} (Images section between the price markers), ${IMAGE_MD} and the agent prompt on ${SITE}/en/nano-banana-2-1. Edit build.mjs, not this file. -->
+<!-- Generated by build.mjs on ${today} from ${LLMS} (Images section between the price markers), ${IMAGE_MD} and the agent prompt and signup-gift image count on ${SITE}/en/nano-banana-2-1. Edit build.mjs, not this file. -->
 `;
 
 // ================================================================ 中文
@@ -328,7 +342,7 @@ const zh = `# 通过 HaryAI 调用 Nano Banana API
 
 [English](README.md)
 
-在 [HaryAI](${page("/zh/nano-banana-2-1")}) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 ${zhZhe}。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（\`/v1/images/generations\`、\`/v1/images/edits\`）和 OpenAI 的 SDK：接口地址填 \`https://api.haryai.com/v1\`，模型名换成 Nano Banana 的名字，代码其它地方不用改；也支持 Gemini 自己的 \`generateContent\`。
+在 [HaryAI](${page("/zh/nano-banana-2-1")}) 用 Nano Banana 2.1 和 Nano Banana 2，价格是 Google 官方价 ${zhZhe}。不用开 Google Cloud 账号，一个 HaryAI 的 key 就够了。两个模型都支持 OpenAI 的图片接口（\`/v1/images/generations\`、\`/v1/images/edits\`）和 OpenAI 的 SDK：接口地址填 \`https://api.haryai.com/v1\`，模型名换成 Nano Banana 的名字，代码其它地方不用改。两个模型也支持 Gemini 自己的 \`generateContent\` 格式。
 
 这个仓库讲怎么调用：curl 示例、Python 和 Node 的小脚本，还有常见问题的回答。完整接口文档见 [docs/image.md](${doc("/docs/image.md")})。
 
@@ -336,11 +350,11 @@ const zh = `# 通过 HaryAI 调用 Nano Banana API
 
 ${modelTable(["模型", "模型名", "尺寸", "支持接口"])}
 
-返回的图片都是 \`b64_json\`，\`n\` 始终是 1（一次一张），编辑不支持蒙版，想改哪里用文字说清楚。
+返回的图片都是 \`b64_json\`。\`n\` 只能是 1，一次出一张。编辑不支持蒙版，想改哪里，在提示词里用文字说清楚。
 
 ## 每张价格
 
-单位美元，是 Google 官方价的 ${zhZhe}，从 HaryAI 余额扣费。生成失败不扣费。
+单位美元，是 Google 官方价的 ${zhZhe}，从 HaryAI 余额扣费。请求失败不扣费。
 
 ${priceTable(["模型", "尺寸", "官方价", "HaryAI"])}
 
@@ -348,7 +362,7 @@ Nano Banana 2.1 是 Google 推出的新模型，用来取代 Nano Banana 2。在
 
 ## 快速开始
 
-1. 在 [haryai.com](${page("/zh/signup")}) 注册。新账号验证邮箱后送 $${gift.toFixed(2)} 余额，够用 Nano Banana 2.1 的 ${leadTier} 档出 ${giftImages} 张图（每张 ${usd(banana21.tiers[leadTier].oursStr)}）。
+1. 在 [haryai.com](${page("/zh/signup")}) 注册。新账号验证邮箱后送 $${gift.toFixed(2)} 余额，够出大约 ${giftImages} 张图。
 2. 在账户页复制 API key，设成环境变量：\`export HARYAI_KEY=...\`
 
 图片生成是同步的：一个请求直接返回图片。
@@ -396,7 +410,7 @@ ${models.map((m) => `${m.name} ${Object.entries(m.tiers).map(([size, p]) => `${s
 
 ### 需要开 Google Cloud 或 Gemini 账号吗？
 
-不需要。有 HaryAI 的 key 就能用，不用开 Google Cloud 项目、不用在那边开计费、也不用申请模型权限。
+不需要。有 HaryAI 的 key 就能用，费用从 HaryAI 余额里按量扣。
 
 ### 能编辑图片吗？
 
@@ -412,11 +426,11 @@ ${models.map((m) => `${m.name} ${Object.entries(m.tiers).map(([size, p]) => `${s
 
 ### 哪些工具能用？
 
-能自己填 OpenAI 接口地址、自己输入模型名的工具都能用，比如 OpenAI 的 Python 和 Node SDK，以及基于它们搭的工具。只给一份固定模型列表、没有接口地址输入框的工具用不了。
+能自己填 OpenAI 接口地址、自己输入模型名的工具都能用，比如 OpenAI 的 Python 和 Node SDK。只给一份固定模型列表、没有接口地址输入框的工具用不了。
 
 ### Nano Banana 2.1 和 2 该选哪个？
 
-Nano Banana 2.1 是 Google 更新的模型，用来取代 Nano Banana 2，在 HaryAI 上也更便宜：${ratioSentenceZh}。没有必须用旧模型的理由，就选 2.1。
+新项目选 Nano Banana 2.1。Google 推出它来取代 Nano Banana 2，它在设计、改图和人脸一致性上都更好，价格也更低：${ratioSentenceZh}。已经在用 Nano Banana 2 的，可以继续用。
 
 ### 生成失败扣钱吗？
 
@@ -430,11 +444,17 @@ Nano Banana 2.1 是 Google 更新的模型，用来取代 Nano Banana 2，在 Ha
 ${promptZh}
 \`\`\`
 
-Claude Code 照常用你自己的 Claude 订阅，只有图片从 HaryAI 余额扣费。Codex 不用先切换到 DeepSeek。详见 [Nano Banana 2.1](${page("/zh/nano-banana-2-1")})。
+详见 [Nano Banana 2.1](${page("/zh/nano-banana-2-1")})。
+
+### Gemini 自己的格式也能用吗？
+
+能，用同一个 key、同一份余额。接口地址是 \`https://api.haryai.com/v1beta\`，key 放在 \`x-goog-api-key\` 请求头里（也可以用 \`Authorization: Bearer\`）。
+
+${sh(geminiGenerate)}
 
 ### 计费怎么算？
 
-${billingNoteZh} ${refusalNoteZh}
+${billingNoteZh}${refusalNoteZh}
 
 ### 报错是什么意思？
 
@@ -459,7 +479,7 @@ MIT，见 [LICENSE](LICENSE)。
 
 价格截至 ${today}。
 
-<!-- 由 build.mjs 于 ${today} 生成，数据来自 ${LLMS}（价格标记之间的 Images 一节）、${IMAGE_MD} 和 ${SITE}/zh/nano-banana-2-1 上的 agent 提示词。请改 build.mjs，不要直接改本文件。 -->
+<!-- 由 build.mjs 于 ${today} 生成，数据来自 ${LLMS}（价格标记之间的 Images 一节）、${IMAGE_MD} 和 ${SITE}/zh/nano-banana-2-1 上的 agent 提示词与注册赠送可出图张数。请改 build.mjs，不要直接改本文件。 -->
 `;
 
 await writeFile("README.md", en);
