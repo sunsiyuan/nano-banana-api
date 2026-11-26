@@ -123,16 +123,7 @@ Nano Banana 2.1 1K $0.0168，2K $0.0252，4K $0.0567（官方价 1K $0.0336，2K
 
 ### 在 Claude Code 或 Codex 里怎么用？
 
-先把 key 放进环境变量 `HARYAI_KEY`，把下面这段发给 agent，在最后一行写上想要的画面。它会写一个小脚本，调用接口，把图片存到当前文件夹。
-
-```text
-用 HaryAI 的 Nano Banana 2.1 帮我出一张图，接口是 Gemini 的 generateContent。
-POST https://api.haryai.com/v1beta/models/gemini-nano-banana-2.1:generateContent
-请求头：x-goog-api-key: $HARYAI_KEY
-请求体：{"contents": [{"role": "user", "parts": [{"text": "<把我的要求写详细>"}]}], "generationConfig": {"responseModalities": ["IMAGE"], "imageConfig": {"aspectRatio": "16:9", "imageSize": "2K"}}}
-在 candidates[0].content.parts 里找到带 inlineData 的那一项，把 data 解码存成 PNG 放在当前文件夹，然后告诉我文件名。
-我想要的画面：
-```
+把账户页的提示词发给你的 Agent 一次，之后直接说「用 Nano Banana 2.1 画一张……」就行。提示词在你的[账户页](https://haryai.com/zh/dashboard?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)，它会给 Agent 装上 HaryAI 技能，并保存你的 key。
 
 详见 [Nano Banana 2.1](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)。
 
@@ -169,16 +160,16 @@ Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的
 - [Nano Banana 用 OpenAI 格式调用](https://haryai.com/zh/nano-banana-openai-api?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)，[Nano Banana 2.1](https://haryai.com/zh/nano-banana-2-1?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)，[Nano Banana 2](https://haryai.com/zh/nano-banana-2?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)
 - [价格](https://haryai.com/zh/pricing?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api)
 - [图片接口文档](https://haryai.com/docs/image.md)，[llms.txt](https://haryai.com/llms.txt)
-- [seedance-2.5-api](https://github.com/sunsiyuan/seedance-2.5-api)：通过 HaryAI 调用 Seedance 2.5 视频 API
-- [seedance-skill](https://github.com/sunsiyuan/seedance-skill)：Claude Code 和 Codex 用的 Seedance 2.5 skill
-- [seedance-comfyui](https://github.com/sunsiyuan/seedance-comfyui)：在 ComfyUI 里用 Seedance 2.5（ComfyUI Manager 里能搜到）
-- [n8n-nodes-haryai](https://github.com/sunsiyuan/n8n-nodes-haryai)：在 n8n 里用 Seedance 2.5（npm 包 `n8n-nodes-haryai`）
-- [deepseek-codex-claude-code](https://github.com/sunsiyuan/deepseek-codex-claude-code)：在 Codex 和 Claude Code 里用 DeepSeek V4
+- [seedance-2.5-api](https://github.com/haryai-com/seedance-2.5-api)：通过 HaryAI 调用 Seedance 2.5 视频 API
+- [seedance-skill](https://github.com/haryai-com/seedance-skill)：Claude Code 和 Codex 用的 Seedance 2.5 skill
+- [seedance-comfyui](https://github.com/haryai-com/seedance-comfyui)：在 ComfyUI 里用 Seedance 2.5（ComfyUI Manager 里能搜到）
+- [n8n-nodes-haryai](https://github.com/haryai-com/n8n-nodes-haryai)：在 n8n 里用 Seedance 2.5（npm 包 `n8n-nodes-haryai`）
+- [deepseek-codex-claude-code](https://github.com/haryai-com/deepseek-codex-claude-code)：在 Codex 和 Claude Code 里用 DeepSeek V4
 
 ## 许可
 
 MIT，见 [LICENSE](LICENSE)。
 
-价格截至 2026-11-23。
+价格截至 2026-11-27。
 
-<!-- 由 build.mjs 于 2026-11-23 生成，数据来自 https://haryai.com/llms.txt（价格标记之间的 Images 一节）、https://haryai.com/docs/image.md 和 https://haryai.com/zh/nano-banana-2-1 上的 agent 提示词与注册赠送可出图张数。请改 build.mjs，不要直接改本文件。 -->
+<!-- 由 build.mjs 于 2026-11-27 生成，数据来自 https://haryai.com/llms.txt（价格标记之间的 Images 一节）、https://haryai.com/docs/image.md 和 https://haryai.com/zh/nano-banana-2-1 上的 agent 提示词与注册赠送可出图张数。请改 build.mjs，不要直接改本文件。 -->

@@ -154,15 +154,16 @@ const billingNoteZh =
   "Nano Banana 2.1 和 2 按 token 计费：每张输出图片按尺寸收固定的 token 数（2.1：1K 1,120、2K 1,680、4K 3,780；2：1K 1,120、2K 1,680、4K 2,520），输入的文字和图片按输入 token 计费。Nano Banana 2.1 还会先思考再出图，这部分思考 token 按文字输出计费，按 2K 图片算，大约在图片价格上再多十分之一。";
 const refusalNoteZh = "上游拒绝（字段有问题，或者提示词、图片被模型的内容审核挡下）会带着上游的报错信息返回，不收费。";
 
-// ---- the Nano Banana 2.1 model page: the agent prompt (first <pre><code>)
-// and how many images the signup gift buys (the site counts thinking and
-// input tokens, so this is not gift / table price)
+// ---- the Nano Banana 2.1 model page: the "with your agent" line (the
+// paragraph under its heading: send the account page's prompt once, then ask
+// for the image) and how many images the signup gift buys (the site counts
+// thinking and input tokens, so this is not gift / table price)
 const pageEn = await get(`${SITE}/en/nano-banana-2-1`);
 const pageZh = await get(`${SITE}/zh/nano-banana-2-1`);
-const agentPrompt = (html, path) =>
-  unescape(must(html.match(/<pre[^>]*><code>([\s\S]*?)<\/code><\/pre>/), `prompt on ${path}`)[1]).trim();
-const promptEn = agentPrompt(pageEn, "/en/nano-banana-2-1");
-const promptZh = agentPrompt(pageZh, "/zh/nano-banana-2-1");
+const agentLine = (html, heading, path) =>
+  unescape(must(html.match(new RegExp(`>${heading}</h3><p[^>]*>([^<]+)</p>`)), `agent line on ${path}`)[1]).trim();
+const agentEn = agentLine(pageEn, "Make it with your agent", "/en/nano-banana-2-1");
+const agentZh = agentLine(pageZh, "让 Agent 帮你做", "/zh/nano-banana-2-1");
 const giftImages = must(pageEn.match(/Enough for about (\d+) images/), "gift image count on /en/nano-banana-2-1")[1];
 const giftImagesZh = must(pageZh.match(/够出大约 ?(\d+) ?张图/), "gift image count on /zh/nano-banana-2-1")[1];
 if (giftImages !== giftImagesZh) throw new Error(`gift image count differs: en ${giftImages}, zh ${giftImagesZh}`);
@@ -293,11 +294,7 @@ No. A request that the model's content moderation turns down, or that fails for 
 
 ### How do I use it from Claude Code or Codex?
 
-Put your key in \`HARYAI_KEY\`, then paste this to the agent with what you want in the last line. It writes a short script, calls the API and saves the PNG to the current folder.
-
-\`\`\`text
-${promptEn}
-\`\`\`
+${agentEn} The prompt is on your [account page](${page("/en/dashboard")}): it installs the HaryAI skill and saves your key.
 
 Guide: [Nano Banana 2.1](${page("/en/nano-banana-2-1")}).
 
@@ -322,11 +319,11 @@ Details: [docs/image.md](${doc("/docs/image.md")}).
 - [Nano Banana in OpenAI format](${page("/en/nano-banana-openai-api")}), [Nano Banana 2.1](${page("/en/nano-banana-2-1")}), [Nano Banana 2](${page("/en/nano-banana-2")})
 - [Pricing](${page("/en/pricing")})
 - [Image API reference](${doc("/docs/image.md")}), [llms.txt](${doc("/llms.txt")})
-- [seedance-2.5-api](https://github.com/sunsiyuan/seedance-2.5-api): the Seedance 2.5 video API through HaryAI
-- [seedance-skill](https://github.com/sunsiyuan/seedance-skill): Seedance 2.5 as a Claude Code and Codex skill
-- [seedance-comfyui](https://github.com/sunsiyuan/seedance-comfyui): Seedance 2.5 in ComfyUI (in ComfyUI Manager)
-- [n8n-nodes-haryai](https://github.com/sunsiyuan/n8n-nodes-haryai): Seedance 2.5 in n8n (npm \`n8n-nodes-haryai\`)
-- [deepseek-codex-claude-code](https://github.com/sunsiyuan/deepseek-codex-claude-code): DeepSeek V4 in Codex and Claude Code
+- [seedance-2.5-api](https://github.com/haryai-com/seedance-2.5-api): the Seedance 2.5 video API through HaryAI
+- [seedance-skill](https://github.com/haryai-com/seedance-skill): Seedance 2.5 as a Claude Code and Codex skill
+- [seedance-comfyui](https://github.com/haryai-com/seedance-comfyui): Seedance 2.5 in ComfyUI (in ComfyUI Manager)
+- [n8n-nodes-haryai](https://github.com/haryai-com/n8n-nodes-haryai): Seedance 2.5 in n8n (npm \`n8n-nodes-haryai\`)
+- [deepseek-codex-claude-code](https://github.com/haryai-com/deepseek-codex-claude-code): DeepSeek V4 in Codex and Claude Code
 
 ## License
 
@@ -438,11 +435,7 @@ ${models.map((m) => `${m.name} ${Object.entries(m.tiers).map(([size, p]) => `${s
 
 ### 在 Claude Code 或 Codex 里怎么用？
 
-先把 key 放进环境变量 \`HARYAI_KEY\`，把下面这段发给 agent，在最后一行写上想要的画面。它会写一个小脚本，调用接口，把图片存到当前文件夹。
-
-\`\`\`text
-${promptZh}
-\`\`\`
+${agentZh}提示词在你的[账户页](${page("/zh/dashboard")})，它会给 Agent 装上 HaryAI 技能，并保存你的 key。
 
 详见 [Nano Banana 2.1](${page("/zh/nano-banana-2-1")})。
 
@@ -467,11 +460,11 @@ ${errTables[0]}
 - [Nano Banana 用 OpenAI 格式调用](${page("/zh/nano-banana-openai-api")})，[Nano Banana 2.1](${page("/zh/nano-banana-2-1")})，[Nano Banana 2](${page("/zh/nano-banana-2")})
 - [价格](${page("/zh/pricing")})
 - [图片接口文档](${doc("/docs/image.md")})，[llms.txt](${doc("/llms.txt")})
-- [seedance-2.5-api](https://github.com/sunsiyuan/seedance-2.5-api)：通过 HaryAI 调用 Seedance 2.5 视频 API
-- [seedance-skill](https://github.com/sunsiyuan/seedance-skill)：Claude Code 和 Codex 用的 Seedance 2.5 skill
-- [seedance-comfyui](https://github.com/sunsiyuan/seedance-comfyui)：在 ComfyUI 里用 Seedance 2.5（ComfyUI Manager 里能搜到）
-- [n8n-nodes-haryai](https://github.com/sunsiyuan/n8n-nodes-haryai)：在 n8n 里用 Seedance 2.5（npm 包 \`n8n-nodes-haryai\`）
-- [deepseek-codex-claude-code](https://github.com/sunsiyuan/deepseek-codex-claude-code)：在 Codex 和 Claude Code 里用 DeepSeek V4
+- [seedance-2.5-api](https://github.com/haryai-com/seedance-2.5-api)：通过 HaryAI 调用 Seedance 2.5 视频 API
+- [seedance-skill](https://github.com/haryai-com/seedance-skill)：Claude Code 和 Codex 用的 Seedance 2.5 skill
+- [seedance-comfyui](https://github.com/haryai-com/seedance-comfyui)：在 ComfyUI 里用 Seedance 2.5（ComfyUI Manager 里能搜到）
+- [n8n-nodes-haryai](https://github.com/haryai-com/n8n-nodes-haryai)：在 n8n 里用 Seedance 2.5（npm 包 \`n8n-nodes-haryai\`）
+- [deepseek-codex-claude-code](https://github.com/haryai-com/deepseek-codex-claude-code)：在 Codex 和 Claude Code 里用 DeepSeek V4
 
 ## 许可
 
