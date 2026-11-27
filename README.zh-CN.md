@@ -32,7 +32,7 @@ Nano Banana 2.1 是 Google 推出的新模型，用来取代 Nano Banana 2。在
 
 ## 快速开始
 
-1. 在 [haryai.com](https://haryai.com/zh/signup?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 注册。新账号验证邮箱后送 $0.50 余额，够出大约 20 张图。
+1. 在 [haryai.com](https://haryai.com/zh/signup?utm_source=github&utm_medium=readme&utm_campaign=nano-banana-api) 注册。新账号验证邮箱后送 $0.35 余额，够出大约 20 张图。
 2. 在账户页复制 API key，设成环境变量：`export HARYAI_KEY=...`
 
 图片生成是同步的：一个请求直接返回图片。
@@ -172,4 +172,4 @@ MIT，见 [LICENSE](LICENSE)。
 
 价格截至 2026-11-27。
 
-<!-- 由 build.mjs 于 2026-11-27 生成，数据来自 https://haryai.com/llms.txt（价格标记之间的 Images 一节）、https://haryai.com/docs/image.md 和 https://haryai.com/zh/nano-banana-2-1 上的 agent 提示词与注册赠送可出图张数。请改 build.mjs，不要直接改本文件。 -->
+<!-- 2026-11-27 由 HaryAI 的价格目录和 https://haryai.com/docs/image.md 生成，请勿手改。 -->
